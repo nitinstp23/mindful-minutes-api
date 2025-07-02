@@ -8,7 +8,7 @@ import (
 
 func main() {
 	server := http.NewServer()
-	
+
 	log.Println("Starting server...")
 	if err := server.Start(); err != nil {
 		log.Fatal("Failed to start server:", err)

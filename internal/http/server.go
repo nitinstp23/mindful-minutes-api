@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hellofresh/health-go/v5"
 	"github.com/joho/godotenv"
+
 	"github.com/mindful-minutes/mindful-minutes-api/internal/database"
 )
 
