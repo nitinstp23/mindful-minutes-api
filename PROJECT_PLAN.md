@@ -26,13 +26,14 @@ The frontend is a Next.js 15 app with:
 ### Users Table
 ```sql
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id CHAR(26) PRIMARY KEY, -- ULID
     clerk_user_id VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) NOT NULL,
     first_name VARCHAR(255),
     last_name VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP DEFAULT NULL
 );
 ```
 
@@ -40,7 +41,7 @@ CREATE TABLE users (
 ```sql
 CREATE TABLE sessions (
     id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id CHAR(26) REFERENCES users(id) ON DELETE CASCADE, -- ULID
     duration_seconds INTEGER NOT NULL, -- seconds
     session_type VARCHAR(50) NOT NULL, -- mindfulness, breathing, metta etc.
     notes TEXT,
