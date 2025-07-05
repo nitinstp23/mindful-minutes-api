@@ -44,6 +44,26 @@ This project will likely follow standard Go API patterns:
 6. Make every task and code change you do as simple as possible. We want to avoid making any massive or complex changes. Every change should impact as little code as possible. Everything is about simplicity
 7. Finally, add a review section to the PROJECT_PLAN.md file with a summary of the changes you made and any other relevant information
 
+# Testing Standards
+
+## Test Structure
+- Use `t.Run()` with descriptive test names that describe expected behavior
+- Test names should follow the format: "return <expected_result> when <condition>"
+- Examples:
+  - "return bad request when signature header is missing"
+  - "successfully create user when user.created event is received"
+  - "return true when signature is valid"
+
+## Test Organization
+- Group related tests under a main test function (e.g., `TestVerifyClerkWebhook`)
+- Use helper functions like `cleanDB()` for setup/teardown operations
+- Prefer calling helper functions in each test rather than using `t.Cleanup()`
+
+## Testing Dependencies
+- Use `github.com/stretchr/testify/assert` for assertions
+- Use `github.com/samber/lo` for utility functions like `lo.ToPtr()`
+- Create test utilities in `internal/testutils/` package for reusable functions
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.

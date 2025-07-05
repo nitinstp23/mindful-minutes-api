@@ -10,7 +10,9 @@ import (
 	"github.com/hellofresh/health-go/v5"
 	"github.com/joho/godotenv"
 
+	"github.com/mindful-minutes/mindful-minutes-api/internal/auth"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/database"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/handlers"
 )
 
 type Server struct {
@@ -83,6 +85,12 @@ func (s *Server) setupHealthChecks() {
 }
 
 func (s *Server) setupRoutes() {
+	// Webhooks (no auth required)
+	webhooks := s.router.Group("/api/webhooks")
+	{
+		webhooks.POST("/clerk", auth.VerifyClerkWebhook)
+	}
+
 	// API routes
 	api := s.router.Group("/api")
 	{
@@ -91,6 +99,14 @@ func (s *Server) setupRoutes() {
 				"message": "pong",
 			})
 		})
+	}
+
+	// Protected API routes (require authentication)
+	protected := s.router.Group("/api")
+	protected.Use(auth.AuthMiddleware())
+	{
+		// User routes
+		protected.GET("/user/profile", handlers.GetUserProfile)
 	}
 }
 

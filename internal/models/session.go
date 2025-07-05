@@ -3,13 +3,12 @@ package models
 import (
 	"time"
 
-	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
 type Session struct {
 	ID              uint           `json:"id" gorm:"primary_key"`
-	UserID          ulid.ULID      `json:"user_id" gorm:"type:char(26);not null;index"`
+	UserID          string         `json:"user_id" gorm:"type:char(26);not null;index"`
 	DurationSeconds int            `json:"duration_seconds" gorm:"not null"`
 	SessionType     string         `json:"session_type" gorm:"not null"`
 	Notes           string         `json:"notes"`
