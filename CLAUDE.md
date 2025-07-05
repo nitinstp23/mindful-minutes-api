@@ -26,6 +26,12 @@ Since this is a greenfield Go project, typical development commands will include
 - `docker build` - Build Docker image (once Dockerfile exists)
 - `docker-compose up` - Run with database (once docker-compose.yml exists)
 
+## Code Quality
+- Go has built-in type checking, so no separate typecheck command is needed
+- Run `go fmt ./...` to format the code
+- Use `go build` to verify code compiles correctly
+- Use `go test ./...` to run all tests and ensure code quality
+
 ## Architecture Notes
 
 This project will likely follow standard Go API patterns:

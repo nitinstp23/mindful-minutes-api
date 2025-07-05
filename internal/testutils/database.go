@@ -2,9 +2,9 @@ package testutils
 
 import (
 	"log"
-	"os"
 	"testing"
 
+	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,9 +12,15 @@ import (
 )
 
 func SetupTestDB(t *testing.T) *gorm.DB {
-	// Use test database URL or in-memory SQLite for testing
-	testDBURL := os.Getenv("TEST_DATABASE_URL")
-	if testDBURL == "" {
+	// Load config to get test database URL
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("Failed to load config: %v", err)
+	}
+
+	// Use test database URL, defaulting to config's database URL with test suffix
+	testDBURL := cfg.Database.URL
+	if testDBURL == "postgres://mindful_user:mindful_pass@localhost:5432/mindful_minutes?sslmode=disable" {
 		testDBURL = "postgres://mindful_user:mindful_pass@localhost:5432/mindful_minutes_test?sslmode=disable"
 	}
 
