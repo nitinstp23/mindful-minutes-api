@@ -250,8 +250,8 @@ func TestVerifyClerkToken(t *testing.T) {
 	t.Run("return error when secret key is missing", func(t *testing.T) {
 		cfg := &config.Config{
 			Auth: config.AuthConfig{
-				ClerkSecretKey:   "",
-				ClerkVerifyURL:   "https://api.clerk.com/v1/verify_token",
+				ClerkSecretKey: "",
+				ClerkVerifyURL: "https://api.clerk.com/v1/verify_token",
 			},
 		}
 

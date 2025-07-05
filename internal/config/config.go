@@ -30,8 +30,8 @@ type DatabaseConfig struct {
 
 // AuthConfig holds authentication-related configuration
 type AuthConfig struct {
-	ClerkSecretKey   string
-	ClerkVerifyURL   string
+	ClerkSecretKey string
+	ClerkVerifyURL string
 }
 
 // AppConfig holds general application configuration
