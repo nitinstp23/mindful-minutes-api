@@ -80,7 +80,7 @@ func verifyClerkToken(token string, cfg *config.Config) (string, error) {
 
 	// Make HTTP request to Clerk's verification endpoint
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.clerk.com/v1/verify_token", nil)
+	req, err := http.NewRequest("GET", cfg.Auth.ClerkVerifyURL, nil)
 	if err != nil {
 		return "", err
 	}

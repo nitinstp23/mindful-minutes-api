@@ -30,7 +30,8 @@ type DatabaseConfig struct {
 
 // AuthConfig holds authentication-related configuration
 type AuthConfig struct {
-	ClerkSecretKey string
+	ClerkSecretKey   string
+	ClerkVerifyURL   string
 }
 
 // AppConfig holds general application configuration
@@ -53,6 +54,7 @@ func Load() (*Config, error) {
 		},
 		Auth: AuthConfig{
 			ClerkSecretKey: getEnvWithDefault("CLERK_SECRET_KEY", ""),
+			ClerkVerifyURL: getEnvWithDefault("CLERK_VERIFY_URL", "https://api.clerk.com/v1/verify_token"),
 		},
 		App: AppConfig{
 			Environment: getEnvWithDefault("ENVIRONMENT", "development"),
