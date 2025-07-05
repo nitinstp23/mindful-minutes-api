@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/database"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 )
@@ -20,7 +20,7 @@ type ClerkJWTClaims struct {
 	Azp string `json:"azp"`
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get token from Authorization header
 		authHeader := c.GetHeader("Authorization")
@@ -41,7 +41,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		token := parts[1]
 
 		// Verify token with Clerk
-		clerkUserID, err := verifyClerkToken(token)
+		clerkUserID, err := verifyClerkToken(token, cfg)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
@@ -65,19 +65,19 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func verifyClerkToken(token string) (string, error) {
+func verifyClerkToken(token string, cfg *config.Config) (string, error) {
 	// In a real implementation, you would verify the JWT token against Clerk's JWKS endpoint
 	// For now, we'll implement a simple verification mechanism
-	
+
 	// Get Clerk secret key
-	secretKey := os.Getenv("CLERK_SECRET_KEY")
+	secretKey := cfg.Auth.ClerkSecretKey
 	if secretKey == "" {
 		return "", fmt.Errorf("clerk secret key not configured")
 	}
 
 	// For development/testing, we'll use a simplified token verification
 	// In production, you should use proper JWT library like golang-jwt/jwt
-	
+
 	// Make HTTP request to Clerk's verification endpoint
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.clerk.com/v1/verify_token", nil)

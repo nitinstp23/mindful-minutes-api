@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 	"github.com/oklog/ulid/v2"
 	"github.com/samber/lo"
-	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 )
 
 func CreateTestUser(clerkUserID string) *models.User {

@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -11,10 +10,9 @@ import (
 
 var DB *gorm.DB
 
-func Connect() error {
-	databaseURL := os.Getenv("DATABASE_URL")
+func Connect(databaseURL string) error {
 	if databaseURL == "" {
-		return fmt.Errorf("DATABASE_URL environment variable is not set")
+		return fmt.Errorf("database URL is required")
 	}
 
 	var err error

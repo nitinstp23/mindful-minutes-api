@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 )
 
 func SetupTestDB(t *testing.T) *gorm.DB {
@@ -38,7 +38,7 @@ func CleanupTestDB(t *testing.T, db *gorm.DB) {
 	// Clean up test data
 	db.Exec("DELETE FROM sessions")
 	db.Exec("DELETE FROM users")
-	
+
 	// Close the database connection
 	sqlDB, err := db.DB()
 	if err != nil {

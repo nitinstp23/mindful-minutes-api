@@ -3,54 +3,45 @@ package http
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hellofresh/health-go/v5"
-	"github.com/joho/godotenv"
 
 	"github.com/mindful-minutes/mindful-minutes-api/internal/auth"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/database"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/handlers"
 )
 
 type Server struct {
 	router *gin.Engine
-	port   string
+	config *config.Config
 }
 
-func NewServer() *Server {
-	// Load environment variables
-	err := godotenv.Load()
+func NewServer() (*Server, error) {
+	// Load configuration
+	cfg, err := config.Load()
 	if err != nil {
-		log.Println("No .env file found")
+		return nil, err
 	}
 
 	// Set Gin mode
-	ginMode := os.Getenv("GIN_MODE")
-	if ginMode != "" {
-		gin.SetMode(ginMode)
-	}
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	gin.SetMode(cfg.Server.GinMode)
 
 	server := &Server{
 		router: gin.Default(),
-		port:   port,
+		config: cfg,
 	}
 
 	// Connect to database
-	if err := database.Connect(); err != nil {
-		log.Fatal("Failed to connect to database:", err)
+	if err := database.Connect(cfg.Database.URL); err != nil {
+		return nil, err
 	}
 
 	server.setupHealthChecks()
 	server.setupRoutes()
-	return server
+	return server, nil
 }
 
 func (s *Server) setupHealthChecks() {
@@ -88,7 +79,7 @@ func (s *Server) setupRoutes() {
 	// Webhooks (no auth required)
 	webhooks := s.router.Group("/api/webhooks")
 	{
-		webhooks.POST("/clerk", auth.VerifyClerkWebhook)
+		webhooks.POST("/clerk", auth.VerifyClerkWebhook(s.config))
 	}
 
 	// API routes
@@ -103,7 +94,7 @@ func (s *Server) setupRoutes() {
 
 	// Protected API routes (require authentication)
 	protected := s.router.Group("/api")
-	protected.Use(auth.AuthMiddleware())
+	protected.Use(auth.AuthMiddleware(s.config))
 	{
 		// User routes
 		protected.GET("/user/profile", handlers.GetUserProfile)
@@ -111,6 +102,6 @@ func (s *Server) setupRoutes() {
 }
 
 func (s *Server) Start() error {
-	log.Printf("Server starting on port %s", s.port)
-	return s.router.Run(":" + s.port)
+	log.Printf("Server starting on port %s", s.config.Server.Port)
+	return s.router.Run(":" + s.config.Server.Port)
 }

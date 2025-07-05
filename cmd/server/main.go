@@ -7,7 +7,10 @@ import (
 )
 
 func main() {
-	server := http.NewServer()
+	server, err := http.NewServer()
+	if err != nil {
+		log.Fatal("Failed to create server:", err)
+	}
 
 	log.Println("Starting server...")
 	if err := server.Start(); err != nil {

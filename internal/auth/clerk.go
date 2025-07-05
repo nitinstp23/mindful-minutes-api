@@ -6,13 +6,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/oklog/ulid/v2"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/database"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
+	"github.com/oklog/ulid/v2"
 )
 
 type ClerkWebhookEvent struct {
@@ -22,13 +22,13 @@ type ClerkWebhookEvent struct {
 }
 
 type ClerkUser struct {
-	ID                string                 `json:"id"`
-	EmailAddresses    []ClerkEmailAddress    `json:"email_addresses"`
-	FirstName         *string                `json:"first_name"`
-	LastName          *string                `json:"last_name"`
-	CreatedAt         int64                  `json:"created_at"`
-	UpdatedAt         int64                  `json:"updated_at"`
-	ExternalAccounts  []ClerkExternalAccount `json:"external_accounts"`
+	ID               string                 `json:"id"`
+	EmailAddresses   []ClerkEmailAddress    `json:"email_addresses"`
+	FirstName        *string                `json:"first_name"`
+	LastName         *string                `json:"last_name"`
+	CreatedAt        int64                  `json:"created_at"`
+	UpdatedAt        int64                  `json:"updated_at"`
+	ExternalAccounts []ClerkExternalAccount `json:"external_accounts"`
 }
 
 type ClerkEmailAddress struct {
@@ -40,57 +40,59 @@ type ClerkExternalAccount struct {
 	Provider string `json:"provider"`
 }
 
-func VerifyClerkWebhook(c *gin.Context) {
-	secretKey := os.Getenv("CLERK_SECRET_KEY")
-	if secretKey == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Clerk secret key not configured"})
-		return
-	}
+func VerifyClerkWebhook(cfg *config.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		secretKey := cfg.Auth.ClerkSecretKey
+		if secretKey == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Clerk secret key not configured"})
+			return
+		}
 
-	// Get the signature from headers
-	signature := c.GetHeader("svix-signature")
-	if signature == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing signature header"})
-		return
-	}
+		// Get the signature from headers
+		signature := c.GetHeader("svix-signature")
+		if signature == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing signature header"})
+			return
+		}
 
-	// Get the timestamp from headers
-	timestamp := c.GetHeader("svix-timestamp")
-	if timestamp == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing timestamp header"})
-		return
-	}
+		// Get the timestamp from headers
+		timestamp := c.GetHeader("svix-timestamp")
+		if timestamp == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing timestamp header"})
+			return
+		}
 
-	// Get the body
-	body, err := c.GetRawData()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read request body"})
-		return
-	}
+		// Get the body
+		body, err := c.GetRawData()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read request body"})
+			return
+		}
 
-	// Verify the signature
-	if !verifySignature(body, signature, timestamp, secretKey) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
-		return
-	}
+		// Verify the signature
+		if !verifySignature(body, signature, timestamp, secretKey) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
+			return
+		}
 
-	// Parse the webhook event
-	var event ClerkWebhookEvent
-	if err := json.Unmarshal(body, &event); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
-		return
-	}
+		// Parse the webhook event
+		var event ClerkWebhookEvent
+		if err := json.Unmarshal(body, &event); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
+			return
+		}
 
-	// Handle different event types
-	switch event.Type {
-	case "user.created":
-		handleUserCreated(c, event.Data)
-	case "user.updated":
-		handleUserUpdated(c, event.Data)
-	case "user.deleted":
-		handleUserDeleted(c, event.Data)
-	default:
-		c.JSON(http.StatusOK, gin.H{"message": "Event type not handled"})
+		// Handle different event types
+		switch event.Type {
+		case "user.created":
+			handleUserCreated(c, event.Data)
+		case "user.updated":
+			handleUserUpdated(c, event.Data)
+		case "user.deleted":
+			handleUserDeleted(c, event.Data)
+		default:
+			c.JSON(http.StatusOK, gin.H{"message": "Event type not handled"})
+		}
 	}
 }
 
