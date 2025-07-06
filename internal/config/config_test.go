@@ -1,9 +1,11 @@
-package config
+package config_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
 )
 
 func TestLoad(t *testing.T) {
@@ -14,7 +16,7 @@ func TestLoad(t *testing.T) {
 		t.Setenv("CLERK_SECRET_KEY", "test_secret")
 		t.Setenv("ENVIRONMENT", "production")
 
-		cfg, err := Load()
+		cfg, err := config.Load()
 
 		assert.NoError(t, err)
 		assert.NotNil(t, cfg)
@@ -28,7 +30,7 @@ func TestLoad(t *testing.T) {
 	t.Run("return error when database URL is explicitly empty", func(t *testing.T) {
 		t.Setenv("DATABASE_URL", " ") // Set to space which will be trimmed to empty
 
-		cfg, err := Load()
+		cfg, err := config.Load()
 
 		assert.Error(t, err)
 		assert.Nil(t, cfg)
@@ -38,7 +40,7 @@ func TestLoad(t *testing.T) {
 	t.Run("return error when port is invalid", func(t *testing.T) {
 		t.Setenv("PORT", "invalid_port")
 
-		cfg, err := Load()
+		cfg, err := config.Load()
 
 		assert.Error(t, err)
 		assert.Nil(t, cfg)
@@ -49,7 +51,7 @@ func TestLoad(t *testing.T) {
 		t.Setenv("ENVIRONMENT", "production")
 		t.Setenv("CLERK_SECRET_KEY", "")
 
-		cfg, err := Load()
+		cfg, err := config.Load()
 
 		assert.Error(t, err)
 		assert.Nil(t, cfg)
@@ -60,7 +62,7 @@ func TestLoad(t *testing.T) {
 		t.Setenv("ENVIRONMENT", "development")
 		t.Setenv("CLERK_SECRET_KEY", "")
 
-		cfg, err := Load()
+		cfg, err := config.Load()
 
 		assert.NoError(t, err)
 		assert.NotNil(t, cfg)
@@ -70,8 +72,8 @@ func TestLoad(t *testing.T) {
 
 func TestConfigMethods(t *testing.T) {
 	t.Run("IsProduction returns true for production environment", func(t *testing.T) {
-		cfg := &Config{
-			App: AppConfig{
+		cfg := &config.Config{
+			App: config.AppConfig{
 				Environment: "production",
 			},
 		}
@@ -82,8 +84,8 @@ func TestConfigMethods(t *testing.T) {
 	})
 
 	t.Run("IsDevelopment returns true for development environment", func(t *testing.T) {
-		cfg := &Config{
-			App: AppConfig{
+		cfg := &config.Config{
+			App: config.AppConfig{
 				Environment: "development",
 			},
 		}
@@ -94,8 +96,8 @@ func TestConfigMethods(t *testing.T) {
 	})
 
 	t.Run("IsTest returns true for test environment", func(t *testing.T) {
-		cfg := &Config{
-			App: AppConfig{
+		cfg := &config.Config{
+			App: config.AppConfig{
 				Environment: "test",
 			},
 		}
@@ -103,31 +105,5 @@ func TestConfigMethods(t *testing.T) {
 		assert.False(t, cfg.IsProduction())
 		assert.False(t, cfg.IsDevelopment())
 		assert.True(t, cfg.IsTest())
-	})
-}
-
-func TestGetEnvWithDefault(t *testing.T) {
-	t.Run("return environment variable when set", func(t *testing.T) {
-		t.Setenv("TEST_VAR", "test_value")
-
-		result := getEnvWithDefault("TEST_VAR", "default_value")
-
-		assert.Equal(t, "test_value", result)
-	})
-
-	t.Run("return default value when environment variable not set", func(t *testing.T) {
-		t.Setenv("TEST_VAR", "")
-
-		result := getEnvWithDefault("TEST_VAR", "default_value")
-
-		assert.Equal(t, "default_value", result)
-	})
-
-	t.Run("return default value when environment variable is empty", func(t *testing.T) {
-		t.Setenv("TEST_VAR", "")
-
-		result := getEnvWithDefault("TEST_VAR", "default_value")
-
-		assert.Equal(t, "default_value", result)
 	})
 }

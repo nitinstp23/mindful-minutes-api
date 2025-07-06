@@ -26,5 +26,6 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	if u.ID == "" {
 		u.ID = ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader).String()
 	}
+
 	return nil
 }

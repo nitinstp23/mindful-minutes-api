@@ -41,6 +41,7 @@ func NewServer() (*Server, error) {
 
 	server.setupHealthChecks()
 	server.setupRoutes()
+
 	return server, nil
 }
 
@@ -103,5 +104,6 @@ func (s *Server) setupRoutes() {
 
 func (s *Server) Start() error {
 	log.Printf("Server starting on port %s", s.config.Server.Port)
+
 	return s.router.Run(":" + s.config.Server.Port)
 }

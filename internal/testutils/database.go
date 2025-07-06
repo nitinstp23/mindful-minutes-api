@@ -50,12 +50,14 @@ func CleanupTestDB(t *testing.T, db *gorm.DB) {
 	sqlDB, err := db.DB()
 	if err != nil {
 		log.Printf("Failed to get SQL DB: %v", err)
+
 		return
 	}
 
 	err = sqlDB.Close()
 	if err != nil {
 		log.Printf("Failed to close SQL DB: %v", err)
+
 		return
 	}
 }

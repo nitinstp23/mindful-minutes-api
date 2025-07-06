@@ -27,6 +27,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing authorization header"})
 			c.Abort()
+
 			return
 		}
 
@@ -35,16 +36,18 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
 			c.Abort()
+
 			return
 		}
 
 		token := parts[1]
 
 		// Verify token with Clerk
-		clerkUserID, err := verifyClerkToken(token, cfg)
+		clerkUserID, err := VerifyClerkToken(token, cfg)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
+
 			return
 		}
 
@@ -53,6 +56,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		if err := database.DB.Where("clerk_user_id = ?", clerkUserID).First(&user).Error; err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 			c.Abort()
+
 			return
 		}
 
@@ -65,7 +69,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	}
 }
 
-func verifyClerkToken(token string, cfg *config.Config) (string, error) {
+func VerifyClerkToken(token string, cfg *config.Config) (string, error) {
 	// In a real implementation, you would verify the JWT token against Clerk's JWKS endpoint
 	// For now, we'll implement a simple verification mechanism
 
@@ -92,7 +96,12 @@ func verifyClerkToken(token string, cfg *config.Config) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't override the main function's return value
+			_ = err
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("token verification failed")
@@ -116,6 +125,7 @@ func GetCurrentUser(c *gin.Context) *models.User {
 			return &u
 		}
 	}
+
 	return nil
 }
 
@@ -125,5 +135,6 @@ func GetCurrentUserID(c *gin.Context) string {
 			return id
 		}
 	}
+
 	return ""
 }

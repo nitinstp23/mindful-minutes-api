@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"net/http"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jarcoal/httpmock"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/auth"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/database"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/testutils"
@@ -29,7 +30,7 @@ func TestAuthMiddleware(t *testing.T) {
 	}
 
 	router := gin.New()
-	router.Use(AuthMiddleware(cfg))
+	router.Use(auth.AuthMiddleware(cfg))
 	router.GET("/protected", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "success"})
 	})
@@ -132,7 +133,7 @@ func TestAuthMiddleware(t *testing.T) {
 		}
 
 		emptyRouter := gin.New()
-		emptyRouter.Use(AuthMiddleware(emptyCfg))
+		emptyRouter.Use(auth.AuthMiddleware(emptyCfg))
 		emptyRouter.GET("/protected", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
@@ -180,7 +181,7 @@ func TestGetCurrentUser(t *testing.T) {
 		testUser := testutils.CreateTestUser("test_clerk_id")
 		c.Set("user", *testUser)
 
-		user := GetCurrentUser(c)
+		user := auth.GetCurrentUser(c)
 
 		assert.NotNil(t, user)
 		assert.Equal(t, testUser.ID, user.ID)
@@ -191,7 +192,7 @@ func TestGetCurrentUser(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		c, _ := gin.CreateTestContext(httptest.NewRecorder())
 
-		user := GetCurrentUser(c)
+		user := auth.GetCurrentUser(c)
 
 		assert.Nil(t, user)
 	})
@@ -202,7 +203,7 @@ func TestGetCurrentUser(t *testing.T) {
 
 		c.Set("user", "invalid_user_type")
 
-		user := GetCurrentUser(c)
+		user := auth.GetCurrentUser(c)
 
 		assert.Nil(t, user)
 	})
@@ -216,7 +217,7 @@ func TestGetCurrentUserID(t *testing.T) {
 		expectedID := "test_user_id_123"
 		c.Set("user_id", expectedID)
 
-		userID := GetCurrentUserID(c)
+		userID := auth.GetCurrentUserID(c)
 
 		assert.Equal(t, expectedID, userID)
 	})
@@ -225,7 +226,7 @@ func TestGetCurrentUserID(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		c, _ := gin.CreateTestContext(httptest.NewRecorder())
 
-		userID := GetCurrentUserID(c)
+		userID := auth.GetCurrentUserID(c)
 
 		assert.Equal(t, "", userID)
 	})
@@ -236,7 +237,7 @@ func TestGetCurrentUserID(t *testing.T) {
 
 		c.Set("user_id", 123) // Wrong type
 
-		userID := GetCurrentUserID(c)
+		userID := auth.GetCurrentUserID(c)
 
 		assert.Equal(t, "", userID)
 	})
@@ -255,7 +256,7 @@ func TestVerifyClerkToken(t *testing.T) {
 			},
 		}
 
-		_, err := verifyClerkToken("test_token", cfg)
+		_, err := auth.VerifyClerkToken("test_token", cfg)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "clerk secret key not configured")
@@ -274,7 +275,7 @@ func TestVerifyClerkToken(t *testing.T) {
 		httpmock.RegisterResponder("GET", cfg.Auth.ClerkVerifyURL,
 			httpmock.NewStringResponder(401, "Unauthorized"))
 
-		_, err := verifyClerkToken("invalid_token", cfg)
+		_, err := auth.VerifyClerkToken("invalid_token", cfg)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "token verification failed")
@@ -295,7 +296,7 @@ func TestVerifyClerkToken(t *testing.T) {
 				"sub": "user_12345",
 			}))
 
-		userID, err := verifyClerkToken("", cfg)
+		userID, err := auth.VerifyClerkToken("", cfg)
 
 		// Empty token still makes the request and can succeed if API allows it
 		assert.NoError(t, err)
@@ -317,7 +318,7 @@ func TestVerifyClerkToken(t *testing.T) {
 				"sub": "user_12345",
 			}))
 
-		userID, err := verifyClerkToken("valid_token", cfg)
+		userID, err := auth.VerifyClerkToken("valid_token", cfg)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "user_12345", userID)
@@ -336,7 +337,7 @@ func TestVerifyClerkToken(t *testing.T) {
 		httpmock.RegisterResponder("GET", cfg.Auth.ClerkVerifyURL,
 			httpmock.NewStringResponder(200, "invalid json"))
 
-		_, err := verifyClerkToken("valid_token", cfg)
+		_, err := auth.VerifyClerkToken("valid_token", cfg)
 
 		assert.Error(t, err)
 	})

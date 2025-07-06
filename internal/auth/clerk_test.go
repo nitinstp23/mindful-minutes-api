@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/auth"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/database"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
@@ -32,7 +33,7 @@ func TestVerifyClerkWebhook(t *testing.T) {
 	}
 
 	router := gin.New()
-	router.POST("/webhooks/clerk", VerifyClerkWebhook(cfg))
+	router.POST("/webhooks/clerk", auth.VerifyClerkWebhook(cfg))
 
 	// Helper function to clean database before each test
 	cleanDB := func() {
@@ -51,7 +52,7 @@ func TestVerifyClerkWebhook(t *testing.T) {
 		}
 
 		emptyRouter := gin.New()
-		emptyRouter.POST("/webhooks/clerk", VerifyClerkWebhook(emptyCfg))
+		emptyRouter.POST("/webhooks/clerk", auth.VerifyClerkWebhook(emptyCfg))
 
 		req := httptest.NewRequest("POST", "/webhooks/clerk", bytes.NewBuffer([]byte("{}")))
 		w := httptest.NewRecorder()
@@ -125,11 +126,11 @@ func TestVerifyClerkWebhook(t *testing.T) {
 	t.Run("successfully create user when user.created event is received", func(t *testing.T) {
 		cleanDB()
 
-		event := ClerkWebhookEvent{
+		event := auth.ClerkWebhookEvent{
 			Type: "user.created",
-			Data: ClerkUser{
+			Data: auth.ClerkUser{
 				ID: "test_user_123",
-				EmailAddresses: []ClerkEmailAddress{
+				EmailAddresses: []auth.ClerkEmailAddress{
 					{EmailAddress: "test@example.com", Primary: true},
 				},
 				FirstName: lo.ToPtr("John"),
@@ -165,11 +166,11 @@ func TestVerifyClerkWebhook(t *testing.T) {
 	t.Run("successfully create user with empty email when no email addresses provided", func(t *testing.T) {
 		cleanDB()
 
-		event := ClerkWebhookEvent{
+		event := auth.ClerkWebhookEvent{
 			Type: "user.created",
-			Data: ClerkUser{
+			Data: auth.ClerkUser{
 				ID:             "test_user_123",
-				EmailAddresses: []ClerkEmailAddress{},
+				EmailAddresses: []auth.ClerkEmailAddress{},
 				FirstName:      lo.ToPtr("John"),
 				LastName:       lo.ToPtr("Doe"),
 				CreatedAt:      time.Now().Unix() * 1000,
@@ -204,11 +205,11 @@ func TestVerifyClerkWebhook(t *testing.T) {
 		existingUser := testutils.CreateTestUser("test_user_123")
 		db.Create(existingUser)
 
-		event := ClerkWebhookEvent{
+		event := auth.ClerkWebhookEvent{
 			Type: "user.updated",
-			Data: ClerkUser{
+			Data: auth.ClerkUser{
 				ID: "test_user_123",
-				EmailAddresses: []ClerkEmailAddress{
+				EmailAddresses: []auth.ClerkEmailAddress{
 					{EmailAddress: "updated@example.com", Primary: true},
 				},
 				FirstName: lo.ToPtr("Jane"),
@@ -244,11 +245,11 @@ func TestVerifyClerkWebhook(t *testing.T) {
 	t.Run("return not found when updating non-existent user", func(t *testing.T) {
 		cleanDB()
 
-		event := ClerkWebhookEvent{
+		event := auth.ClerkWebhookEvent{
 			Type: "user.updated",
-			Data: ClerkUser{
+			Data: auth.ClerkUser{
 				ID: "nonexistent_user",
-				EmailAddresses: []ClerkEmailAddress{
+				EmailAddresses: []auth.ClerkEmailAddress{
 					{EmailAddress: "test@example.com", Primary: true},
 				},
 				FirstName: lo.ToPtr("John"),
@@ -280,9 +281,9 @@ func TestVerifyClerkWebhook(t *testing.T) {
 		existingUser := testutils.CreateTestUser("test_user_123")
 		db.Create(existingUser)
 
-		event := ClerkWebhookEvent{
+		event := auth.ClerkWebhookEvent{
 			Type: "user.deleted",
-			Data: ClerkUser{
+			Data: auth.ClerkUser{
 				ID: "test_user_123",
 			},
 		}
@@ -311,9 +312,9 @@ func TestVerifyClerkWebhook(t *testing.T) {
 	t.Run("return ok with message when unhandled event type is received", func(t *testing.T) {
 		cleanDB()
 
-		event := ClerkWebhookEvent{
+		event := auth.ClerkWebhookEvent{
 			Type: "user.unknown",
-			Data: ClerkUser{ID: "test_user_123"},
+			Data: auth.ClerkUser{ID: "test_user_123"},
 		}
 
 		payload, _ := json.Marshal(event)
@@ -340,7 +341,7 @@ func TestVerifySignature(t *testing.T) {
 		timestamp := "1234567890"
 		signature := testutils.GenerateValidClerkSignature(payload, timestamp, secret)
 
-		result := verifySignature([]byte(payload), signature, timestamp, secret)
+		result := auth.VerifySignature([]byte(payload), signature, timestamp, secret)
 		assert.True(t, result)
 	})
 
@@ -349,7 +350,7 @@ func TestVerifySignature(t *testing.T) {
 		timestamp := "1234567890"
 		signature := "v1,invalid_signature"
 
-		result := verifySignature([]byte(payload), signature, timestamp, secret)
+		result := auth.VerifySignature([]byte(payload), signature, timestamp, secret)
 		assert.False(t, result)
 	})
 
@@ -359,7 +360,7 @@ func TestVerifySignature(t *testing.T) {
 		validSig := testutils.GenerateValidClerkSignature(payload, timestamp, secret)
 		multiSig := "v1,invalid_signature " + validSig
 
-		result := verifySignature([]byte(payload), multiSig, timestamp, secret)
+		result := auth.VerifySignature([]byte(payload), multiSig, timestamp, secret)
 		assert.True(t, result)
 	})
 
@@ -367,7 +368,7 @@ func TestVerifySignature(t *testing.T) {
 		payload := "test payload"
 		timestamp := "1234567890"
 
-		result := verifySignature([]byte(payload), "invalid_format", timestamp, secret)
+		result := auth.VerifySignature([]byte(payload), "invalid_format", timestamp, secret)
 		assert.False(t, result)
 	})
 
@@ -375,7 +376,7 @@ func TestVerifySignature(t *testing.T) {
 		payload := "test payload"
 		timestamp := "1234567890"
 
-		result := verifySignature([]byte(payload), "", timestamp, secret)
+		result := auth.VerifySignature([]byte(payload), "", timestamp, secret)
 		assert.False(t, result)
 	})
 }

@@ -45,6 +45,7 @@ func VerifyClerkWebhook(cfg *config.Config) gin.HandlerFunc {
 		secretKey := cfg.Auth.ClerkSecretKey
 		if secretKey == "" {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Clerk secret key not configured"})
+
 			return
 		}
 
@@ -52,6 +53,7 @@ func VerifyClerkWebhook(cfg *config.Config) gin.HandlerFunc {
 		signature := c.GetHeader("svix-signature")
 		if signature == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing signature header"})
+
 			return
 		}
 
@@ -59,6 +61,7 @@ func VerifyClerkWebhook(cfg *config.Config) gin.HandlerFunc {
 		timestamp := c.GetHeader("svix-timestamp")
 		if timestamp == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing timestamp header"})
+
 			return
 		}
 
@@ -66,12 +69,14 @@ func VerifyClerkWebhook(cfg *config.Config) gin.HandlerFunc {
 		body, err := c.GetRawData()
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read request body"})
+
 			return
 		}
 
 		// Verify the signature
-		if !verifySignature(body, signature, timestamp, secretKey) {
+		if !VerifySignature(body, signature, timestamp, secretKey) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
+
 			return
 		}
 
@@ -79,6 +84,7 @@ func VerifyClerkWebhook(cfg *config.Config) gin.HandlerFunc {
 		var event ClerkWebhookEvent
 		if err := json.Unmarshal(body, &event); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
+
 			return
 		}
 
@@ -96,7 +102,7 @@ func VerifyClerkWebhook(cfg *config.Config) gin.HandlerFunc {
 	}
 }
 
-func verifySignature(payload []byte, signature, timestamp, secret string) bool {
+func VerifySignature(payload []byte, signature, timestamp, secret string) bool {
 	// Create the signed payload
 	signedPayload := timestamp + "." + string(payload)
 
@@ -125,6 +131,7 @@ func handleUserCreated(c *gin.Context, clerkUser ClerkUser) {
 	for _, emailAddr := range clerkUser.EmailAddresses {
 		if emailAddr.Primary {
 			email = emailAddr.EmailAddress
+
 			break
 		}
 	}
@@ -148,6 +155,7 @@ func handleUserCreated(c *gin.Context, clerkUser ClerkUser) {
 	// Save to database
 	if err := database.DB.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user", "details": err.Error()})
+
 		return
 	}
 
@@ -162,6 +170,7 @@ func handleUserUpdated(c *gin.Context, clerkUser ClerkUser) {
 	var user models.User
 	if err := database.DB.Where("clerk_user_id = ?", clerkUser.ID).First(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+
 		return
 	}
 
@@ -170,6 +179,7 @@ func handleUserUpdated(c *gin.Context, clerkUser ClerkUser) {
 	for _, emailAddr := range clerkUser.EmailAddresses {
 		if emailAddr.Primary {
 			email = emailAddr.EmailAddress
+
 			break
 		}
 	}
@@ -186,6 +196,7 @@ func handleUserUpdated(c *gin.Context, clerkUser ClerkUser) {
 	// Save to database
 	if err := database.DB.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+
 		return
 	}
 
@@ -199,6 +210,7 @@ func handleUserDeleted(c *gin.Context, clerkUser ClerkUser) {
 	// Soft delete user
 	if err := database.DB.Where("clerk_user_id = ?", clerkUser.ID).Delete(&models.User{}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+
 		return
 	}
 

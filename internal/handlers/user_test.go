@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/handlers"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/testutils"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,7 @@ func TestGetUserProfile(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	router := gin.New()
-	router.GET("/user/profile", GetUserProfile)
+	router.GET("/user/profile", handlers.GetUserProfile)
 
 	t.Run("return user profile when user exists in context", func(t *testing.T) {
 		testUser := testutils.CreateTestUser("test_clerk_id")
@@ -27,7 +28,7 @@ func TestGetUserProfile(t *testing.T) {
 		c.Request = req
 		c.Set("user", *testUser)
 
-		GetUserProfile(c)
+		handlers.GetUserProfile(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Contains(t, w.Body.String(), testUser.ID)
@@ -44,7 +45,7 @@ func TestGetUserProfile(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 		c.Request = req
 
-		GetUserProfile(c)
+		handlers.GetUserProfile(c)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 		assert.Contains(t, w.Body.String(), "User not found")
@@ -59,7 +60,7 @@ func TestGetUserProfile(t *testing.T) {
 		c.Request = req
 		c.Set("user", "invalid_user_type")
 
-		GetUserProfile(c)
+		handlers.GetUserProfile(c)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 		assert.Contains(t, w.Body.String(), "User not found")
@@ -78,7 +79,7 @@ func TestGetUserProfile(t *testing.T) {
 		c.Request = req
 		c.Set("user", *testUser)
 
-		GetUserProfile(c)
+		handlers.GetUserProfile(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Contains(t, w.Body.String(), testUser.ID)
@@ -99,7 +100,7 @@ func TestGetUserProfile(t *testing.T) {
 		c.Request = req
 		c.Set("user", *testUser)
 
-		GetUserProfile(c)
+		handlers.GetUserProfile(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Contains(t, w.Body.String(), testUser.ID)

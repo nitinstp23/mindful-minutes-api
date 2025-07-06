@@ -11,6 +11,7 @@ func GetUserProfile(c *gin.Context) {
 	user := auth.GetCurrentUser(c)
 	if user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+
 		return
 	}
 
