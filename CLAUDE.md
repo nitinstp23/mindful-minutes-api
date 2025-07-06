@@ -28,6 +28,7 @@ Since this is a greenfield Go project, typical development commands will include
 
 ## Code Quality
 - Go has built-in type checking, so no separate typecheck command is needed
+- Make sure to add newline to the end of each file using UNIX line endings
 - Run `go fmt ./...` to format the code
 - Use `go build` to verify code compiles correctly
 - Use `go test ./...` to run all tests and ensure code quality
@@ -65,10 +66,22 @@ This project will likely follow standard Go API patterns:
 - Use helper functions like `cleanDB()` for setup/teardown operations
 - Prefer calling helper functions in each test rather than using `t.Cleanup()`
 
+## Test Coverage Guidelines
+- Only write tests for public functions (exported functions that start with uppercase)
+- Do not write tests for private functions (functions that start with lowercase)
+- Private functions are tested indirectly through their public function callers
+
 ## Testing Dependencies
 - Use `github.com/stretchr/testify/assert` for assertions
 - Use `github.com/samber/lo` for utility functions like `lo.ToPtr()`
 - Create test utilities in `internal/testutils/` package for reusable functions
+
+# Code Organization
+
+## Function Order
+- Public functions should be placed at the top of the file
+- Private functions should be placed at the bottom of the file
+- This helps with readability and follows Go conventions
 
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.

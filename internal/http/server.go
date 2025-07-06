@@ -104,6 +104,9 @@ func (s *Server) setupRoutes() {
 		protected.POST("/sessions", handlers.CreateSession)
 		protected.GET("/sessions", handlers.GetSessions)
 		protected.DELETE("/sessions/:id", handlers.DeleteSession)
+
+		// Dashboard routes
+		protected.GET("/dashboard", handlers.GetDashboard)
 	}
 }
 
