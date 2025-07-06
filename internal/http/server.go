@@ -99,6 +99,11 @@ func (s *Server) setupRoutes() {
 	{
 		// User routes
 		protected.GET("/user/profile", handlers.GetUserProfile)
+
+		// Session routes
+		protected.POST("/sessions", handlers.CreateSession)
+		protected.GET("/sessions", handlers.GetSessions)
+		protected.DELETE("/sessions/:id", handlers.DeleteSession)
 	}
 }
 
