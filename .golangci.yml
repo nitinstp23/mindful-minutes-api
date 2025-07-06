@@ -1,16 +1,14 @@
 version: "2"
 
 run:
-  timeout: 2m
+  timeout: 5m
   issues-exit-code: 1
   tests: true
 
 output:
-  format: colored-line-number
-
-linters-settings:
-  goimports:
-    local-prefixes: github.com/mindful-minutes/mindful-minutes-api
+  formats:
+    text:
+      colors: true
 
 linters:
   enable:
@@ -24,11 +22,12 @@ linters:
     - goimports
     - misspell
 
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
 
+issues:
   max-issues-per-linter: 50
   max-same-issues: 3

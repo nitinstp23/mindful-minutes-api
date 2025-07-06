@@ -4,11 +4,12 @@ import (
 	"log"
 	"testing"
 
-	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
-	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/mindful-minutes/mindful-minutes-api/internal/config"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 )
 
 func SetupTestDB(t *testing.T) *gorm.DB {
@@ -51,7 +52,12 @@ func CleanupTestDB(t *testing.T, db *gorm.DB) {
 		log.Printf("Failed to get SQL DB: %v", err)
 		return
 	}
-	sqlDB.Close()
+
+	err = sqlDB.Close()
+	if err != nil {
+		log.Printf("Failed to close SQL DB: %v", err)
+		return
+	}
 }
 
 func TruncateTable(db *gorm.DB, table string) {
