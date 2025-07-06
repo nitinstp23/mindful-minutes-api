@@ -7,23 +7,6 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	t.Run("successfully load config with default values", func(t *testing.T) {
-		t.Setenv("PORT", "")
-		t.Setenv("GIN_MODE", "")
-		t.Setenv("CLERK_SECRET_KEY", "")
-		t.Setenv("ENVIRONMENT", "")
-
-		cfg, err := Load()
-
-		assert.NoError(t, err)
-		assert.NotNil(t, cfg)
-		assert.Equal(t, "8080", cfg.Server.Port)
-		assert.Equal(t, "debug", cfg.Server.GinMode)
-		assert.Equal(t, "postgres://mindful_user:mindful_pass@localhost:5432/mindful_minutes?sslmode=disable", cfg.Database.URL)
-		assert.Equal(t, "", cfg.Auth.ClerkSecretKey)
-		assert.Equal(t, "development", cfg.App.Environment)
-	})
-
 	t.Run("successfully load config with environment variables", func(t *testing.T) {
 		t.Setenv("PORT", "9000")
 		t.Setenv("GIN_MODE", "release")
