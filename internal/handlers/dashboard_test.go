@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"net/http"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/database"
+	"github.com/mindful-minutes/mindful-minutes-api/internal/handlers"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/models"
 	"github.com/mindful-minutes/mindful-minutes-api/internal/testutils"
 	"github.com/samber/lo"
@@ -71,7 +72,7 @@ func TestGetDashboard(t *testing.T) {
 		c.Set("user", *user)
 
 		// Call handler
-		GetDashboard(c)
+		handlers.GetDashboard(c)
 
 		// Assertions
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -110,7 +111,7 @@ func TestGetDashboard(t *testing.T) {
 		c.Set("user", *user)
 
 		// Call handler
-		GetDashboard(c)
+		handlers.GetDashboard(c)
 
 		// Assertions
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -158,7 +159,7 @@ func TestGetDashboard(t *testing.T) {
 		c.Set("user", *user)
 
 		// Call handler
-		GetDashboard(c)
+		handlers.GetDashboard(c)
 
 		// Assertions
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -176,7 +177,7 @@ func TestGetDashboard(t *testing.T) {
 		c.Request = httptest.NewRequest("GET", "/api/dashboard", nil)
 
 		// Call handler without setting user in context
-		GetDashboard(c)
+		handlers.GetDashboard(c)
 
 		// Assertions
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
@@ -207,7 +208,7 @@ func TestGetDashboard(t *testing.T) {
 		c.Set("user", *user)
 
 		// Call handler
-		GetDashboard(c)
+		handlers.GetDashboard(c)
 
 		// Should still return OK with default year
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -238,7 +239,7 @@ func TestGetDashboard(t *testing.T) {
 		c.Set("user", *user)
 
 		// Call handler
-		GetDashboard(c)
+		handlers.GetDashboard(c)
 
 		// Should still return OK with default limit
 		assert.Equal(t, http.StatusOK, w.Code)

@@ -97,12 +97,13 @@ func calculateCurrentStreak(sessionDates []string) int {
 	yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 	
 	// Check if we should start counting from today or yesterday
-	startDate := ""
-	if sessionDates[0] == today {
+	var startDate string
+	switch sessionDates[0] {
+	case today:
 		startDate = today
-	} else if sessionDates[0] == yesterday {
+	case yesterday:
 		startDate = yesterday
-	} else {
+	default:
 		// No recent sessions, no current streak
 		return 0
 	}
@@ -127,17 +128,6 @@ func calculateCurrentStreak(sessionDates []string) int {
 	return currentStreak
 }
 
-// hasSessionOnDate checks if user has any session on a specific date
-func hasSessionOnDate(userID string, date time.Time) (bool, error) {
-	var count int64
-	dateStr := date.Format("2006-01-02")
-
-	err := database.DB.Model(&models.Session{}).
-		Where("user_id = ? AND DATE(created_at) = ? AND deleted_at IS NULL", userID, dateStr).
-		Count(&count).Error
-
-	return count > 0, err
-}
 
 // GetWeeklyProgress gets the last 7 days of meditation progress
 func GetWeeklyProgress(userID string) ([]WeeklyProgress, error) {

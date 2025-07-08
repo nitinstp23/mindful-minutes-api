@@ -17,6 +17,7 @@ func GetDashboard(c *gin.Context) {
 	user := auth.GetCurrentUser(c)
 	if user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+
 		return
 	}
 
@@ -26,6 +27,7 @@ func GetDashboard(c *gin.Context) {
 	dashboardData, err := services.GetDashboardData(user, year, sessionLimit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve dashboard data", "details": err.Error()})
+
 		return
 	}
 
